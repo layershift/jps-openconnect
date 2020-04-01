@@ -21,11 +21,16 @@ LOGFILE=/dev/null
 exec > >(tee -a $LOGFILE)
 exec 2>&1
 
-# dependency check
+# dependency check 
 which openconnect 2>/dev/null 1>/dev/null
 if [ $? -gt 0 ]; then
     echo "Error: openconnect not installed";
     exit 1;
+fi
+
+#check if disabled
+if [ -f /usr/local/bin/vpn_disabled ]; then
+    exit 0;
 fi
 
 function checkOpenConnectPID {
@@ -50,22 +55,23 @@ function findServerCert {
 }
 
 function startOpenConnect {
+    #cp -f /etc/resolv.conf /etc/resolv.conf.bak
     # start here open connect with your params and grab its pid
     echo "$VPN_PASSWORD" | openconnect $VPN_OPTIONS --authgroup=$VPN_GROUP --servercert $VPN_SERVER_CERT -u $VPN_USER --passwd-on-stdin $VPN_SERVER & OPENCONNECT_PID=$!
     echo $OPENCONNECT_PID > $OPENCONNECT_PID_FILE;
 }
 function stopOpenConnect {
-
+    #cp -f /etc/resolv.conf.bak /etc/resolv.conf
     for pid in $(cat $OPENCONNECT_PID_FILE); do
-        kill $pid;
+        kill -s USR1 $pid;
         sleep 2;
     done;
-    [ ! -z  $OPENCONNECT_PID ] && kill $OPENCONNECT_PID;
+    [ ! -z  $OPENCONNECT_PID ] && kill -s USR1 $OPENCONNECT_PID;
     rm -f $OPENCONNECT_PID_FILE 2>&1 1>/dev/null
     rm -f $PID_FILE 2>&1 1>/dev/null
-    killall openconnect 2>&1 1>/dev/null
-    killall $NAME 2>&1 1>/dev/null
     echo "$(date) Bye";
+    killall -s USR1 openconnect 2>&1 1>/dev/null
+    killall -s USR1 $NAME 2>&1 1>/dev/null
     exit 0;
 }
 
