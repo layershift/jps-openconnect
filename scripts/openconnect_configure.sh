@@ -48,7 +48,7 @@ servercert=$(/usr/local/bin/vpn findServerCert)
 sed "s#VPN_SERVER_CERT=.*#VPN_SERVER_CERT='$servercert'#" -i $script
 
 LOGFILE=/dev/null
-case nodetype in 
+case $nodetype in 
     tomcat|tomcat7|tomcat85|tomcat9)
         LOGFILE=$LOGFILE
     ;;

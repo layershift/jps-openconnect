@@ -58,6 +58,10 @@ menu:
   - caption: Check hosts file
     loadingText: Checking..
     action: checkHostsFile
+  - caption: Stop Openconnect
+    loadingText: Stopping..
+    confirmText: Are you sure you wish to stop Openconnect?
+    action: stopOpenconnect
   - caption: Restart Openconnect
     loadingText: Restarting..
     confirmText: Are you sure you wish to restart Openconnect?
@@ -116,12 +120,23 @@ actions:
         script: |
           return {result: 2309, message: message.replace(/\n/g, '  \n')}
 
+  stopOpenconnect:
+    - cmd [${globals.targetNodeId}]:
+        - /usr/local/bin/vpn stop 2>&1 > /dev/null;
+        - sleep 3;
+        - /usr/local/bin/vpn status;
+        - echo "";
+      user: root
+    - message: ${response.out}
+      script: |
+        return {result: 2308, message: message.replace(/\n/g, '  \n')}
+
   restartOpenconnect:
     - cmd [${globals.targetNodeId}]:
         - /usr/local/bin/vpn stop 2>&1 > /dev/null;
         - sleep 3;
         - /usr/local/bin/vpn status;
-        - /usr/local/bin/vpn &;
+        - /usr/local/bin/vpn &
         - sleep 3;
         - /usr/local/bin/vpn status;
         - echo "";
