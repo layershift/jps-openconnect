@@ -8,6 +8,7 @@ password="$5"
 group="$6"
 grouppassword="$7"
 hosts="$8"
+nodetype="$9"
 
 script="/usr/local/bin/vpn"
 hostsFile="/etc/hosts"
@@ -45,6 +46,67 @@ sed "s#VPN_GROUP_PASSWORD=.*#VPN_GROUP_PASSWORD='$grouppassword'#" -i $script
 # find server cert
 servercert=$(/usr/local/bin/vpn findServerCert)
 sed "s#VPN_SERVER_CERT=.*#VPN_SERVER_CERT='$servercert'#" -i $script
+
+LOGFILE=/dev/null
+case nodetype in 
+    tomcat|tomcat7|tomcat85|tomcat9)
+        LOGFILE=$LOGFILE
+    ;;
+    tomee-dockerized|tomee)
+        LOGFILE=$LOGFILE    
+    ;;
+    glassfish|glassfish3|glassfish4)
+        LOGFILE=$LOGFILE    
+    ;;
+    jetty|jetty9|jetty6|jetty8)
+        LOGFILE=$LOGFILE    
+    ;; 
+    smartfox-server)
+        LOGFILE=$LOGFILE
+    ;;
+    powerdns)
+        LOGFILE=$LOGFILE    
+    ;;
+    railo4)
+        LOGFILE=$LOGFILE    
+    ;;
+    wildfly|wildfly10|wildfly11|wildfly12|wildfly13|wildfly14|wildfly15|wildfly16|wildfly17)
+        LOGFILE=$LOGFILE    
+    ;;
+    springboot)
+        LOGFILE=$LOGFILE
+    ;; 
+    apache|apache2)
+        LOGFILE=/var/log/httpd/vpn.log  
+    ;;
+    nginxphp-dockerized|nginxphp)
+        LOGFILE=/var/log/nginx/vpn.log    
+    ;;
+    apache-python|apache2-python)
+        LOGFILE=$LOGFILE    
+    ;;
+    apache-ruby|apache2-ruby)
+        LOGFILE=$LOGFILE    
+    ;;
+    nginxruby|nginx-ruby)
+        LOGFILE=$LOGFILE    
+    ;;
+    nginxphp-redis)
+        LOGFILE=$LOGFILE    
+    ;;
+    nodejs)
+        LOGFILE=$LOGFILE    
+    ;;
+    iis8)
+        LOGFILE=$LOGFILE    
+    ;;
+    litespeedphp)
+        LOGFILE=$LOGFILE
+    ;;
+esac
+
+sed "s#LOGFILE=.*#LOGFILE='$LOGFILE'#" -i $script
+
 
 #/etc/hosts
 

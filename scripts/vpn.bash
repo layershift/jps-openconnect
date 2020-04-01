@@ -17,7 +17,7 @@ OPENCONNECT_PID=""
 RUNNING=""
 NAME=${0##*/}
 
-LOGFILE=/var/log/httpd/vpn.log
+LOGFILE=/dev/null
 exec > >(tee -a $LOGFILE)
 exec 2>&1
 
