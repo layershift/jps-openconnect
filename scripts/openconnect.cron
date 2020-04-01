@@ -1,0 +1,6 @@
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+SHELL=/bin/bash
+
+*/5 * * * * root /usr/local/bin/vpn &
+

@@ -1,0 +1,3 @@
+Cmnd_Alias OPENCONNECT = /usr/local/bin/vpn, /usr/local/bin/vpn *
+
+%ssh-access ALL = NOPASSWD: OPENCONNECT
