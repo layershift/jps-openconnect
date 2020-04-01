@@ -5,7 +5,7 @@ type: update
 name: 'openconnect'
 id: 'openconnect'
 homepage: https://github.com/layershift/jps-openconnect
-baseUrl: https://raw.githubusercontent.com/layershift/jps-jps-openconnect/master
+baseUrl: https://raw.githubusercontent.com/layershift/jps-openconnect/master
 logo: /images/openconnect.png?_r=${fn.random}
 
 categories:
