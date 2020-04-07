@@ -4,17 +4,19 @@ VPN_SERVER=""
 VPN_USER=""
 VPN_PASSWORD=''
 VPN_GROUP=""
-VPN_GROUP_PASSWORD=""
 VPN_SERVER_CERT=''
 VPN_OPTIONS=""
 
 OPENCONNECT_PID_FILE="/var/run/vpn_OPENCONNECT"
 PID_FILE="/var/run/vpn"
+CONF_DIR="/etc/vpn-conf"
 
 VERBOSE=0
+MULTIPLE=0
 
 OPENCONNECT_PID=""
 RUNNING=""
+SCRIPT_RUNNING=""
 NAME=${0##*/}
 
 LOGFILE=/dev/null
@@ -28,41 +30,83 @@ if [ $? -gt 0 ]; then
     exit 1;
 fi
 
-#check if disabled
+# check if disabled
 if [ -f /usr/local/bin/vpn_disabled ]; then
     exit 0;
 fi
 
-function checkOpenConnectPID {
-    if [ ! -f $OPENCONNECT_PID_FILE ]; then
-        RUNNING=1
+# multiple-connection mode check
+if [ -d $CONF_DIR ]; then
+    MULTIPLE=1
+fi
+
+function checkScriptRunning() {
+    if [ ! -f $PID_FILE ]; then
+        SCRIPT_RUNNING=1
     else
-        PID_ON_FILE=$(tail -n 1 $OPENCONNECT_PID_FILE);
+        PID_ON_FILE=$(tail -n 1 $PID_FILE);
         ps -p $PID_ON_FILE &> /dev/null
-        RUNNING=$?
+        SCRIPT_RUNNING=$?
     fi
 }
 
 function checkOpenConnect {
-    ps -p $OPENCONNECT_PID &> /dev/null
-    RUNNING=$?
-
-#    echo $RUNNING &>> reconnect.log
+    if [ $MULTIPLE -eq 0 ]; then
+        if [ ! -f $OPENCONNECT_PID_FILE ]; then
+            RUNNING=1
+        else
+            PID_ON_FILE=$(tail -n 1 $OPENCONNECT_PID_FILE);
+            ps -p $PID_ON_FILE &> /dev/null
+            RUNNING=$?
+    fi
+    else
+        RUNNING=0
+        for f in "$CONF_DIR"/*.conf; do
+            f_base=$(basename -- "$f")
+            if ! ([ -f $OPENCONNECT_PID_FILE ] && grep "$f_base" $OPENCONNECT_PID_FILE | awk '{ print $1 }' |  xargs ps -p &> /dev/null); then
+                RUNNING=1
+            fi
+        done
+    fi
+    #    echo $RUNNING &>> reconnect.log
 }
 
 function findServerCert {
     echo "$VPN_PASSWORD" | openconnect $VPN_OPTIONS --authgroup=$VPN_GROUP --non-inter -u $VPN_USER --passwd-on-stdin --authenticate $VPN_SERVER 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g"
 }
 
-function startOpenConnect {
-    #cp -f /etc/resolv.conf /etc/resolv.conf.bak
-    # start here open connect with your params and grab its pid
+function startWithConf {
+    VPN_PASSWORD=$(awk '/^password/{print $3}' "$1")
+    VPN_USER=$(awk '/^user/{print $3}' "$1")
+    VPN_SERVER=$(awk '/^server/{print $3}' "$1")
+    VPN_GROUP=$(awk '/^group/{print $3}' "$1")
+    VPN_SERVER_CERT=$(awk '/^servercert/{print $3}' "$1")
+    VPN_OPTIONS=$(awk '/^passwordoptions/{print $3}' "$1")
     echo "$VPN_PASSWORD" | openconnect $VPN_OPTIONS --authgroup=$VPN_GROUP --servercert $VPN_SERVER_CERT -u $VPN_USER --passwd-on-stdin $VPN_SERVER & OPENCONNECT_PID=$!
-    echo $OPENCONNECT_PID > $OPENCONNECT_PID_FILE;
+    sed -i -e "/$2/d" $OPENCONNECT_PID_FILE
+    echo $OPENCONNECT_PID $2 >> $OPENCONNECT_PID_FILE
 }
+
+function startOpenConnect {
+    if [ $MULTIPLE -eq 0 ]; then
+        #cp -f /etc/resolv.conf /etc/resolv.conf.bak
+        # start here open connect with your params and grab its pid
+        echo "$VPN_PASSWORD" | openconnect $VPN_OPTIONS --authgroup=$VPN_GROUP --servercert $VPN_SERVER_CERT -u $VPN_USER --passwd-on-stdin $VPN_SERVER & OPENCONNECT_PID=$!
+        echo $OPENCONNECT_PID > $OPENCONNECT_PID_FILE;
+    else 
+        for f in "$CONF_DIR"/*.conf; do
+            f_base=$(basename -- "$f")
+            if ! ([ -f $OPENCONNECT_PID_FILE ] && grep "$f_base" $OPENCONNECT_PID_FILE | awk '{ print $1 }' |  xargs ps -p &> /dev/null); then
+                startWithConf "$f" "$f_base";
+            fi
+        done
+    fi
+
+}
+
 function stopOpenConnect {
     #cp -f /etc/resolv.conf.bak /etc/resolv.conf
-    for pid in $(cat $OPENCONNECT_PID_FILE); do
+    for pid in $(awk '{ print $1 }' $OPENCONNECT_PID_FILE); do
         kill -s USR1 $pid;
         sleep 2;
     done;
@@ -99,7 +143,7 @@ while [[ $# -gt 0 ]]; do
                 exit 0
             ;;
             status)
-                checkOpenConnectPID
+                checkOpenConnect
                 echo -n "$0 .. "
                 if [ $RUNNING -eq 0 ]; then
                     echo "running"
@@ -114,10 +158,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done;
 
-checkOpenConnectPID
-if [ $RUNNING -eq 0 ]; then
+checkScriptRunning
+if [ $SCRIPT_RUNNING -eq 0 ]; then
     if [ $VERBOSE -gt 0 ]; then
-        echo "Debug: Already running";
+        echo "Debug: Script already running";
     fi;
     exit 5;
 else
