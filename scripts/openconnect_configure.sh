@@ -11,11 +11,11 @@ hosts="$8"
 nodetype="$9"
 
 script="/usr/local/bin/vpn"
+config="/etc/vpn-conf/server.conf"
 hostsFile="/etc/hosts"
 
 function hostsFileCleanup {
-    grep "#openconnect mark" $hostsFile 2>1 >/dev/null
-    if [ $? -eq 0 ]; then
+    if grep -q "#openconnect mark" $hostsFile; then
         blockStart=$(grep -n "#openconnect mark" $hostsFile | awk -F ":" '{print $1}' | head -n 1)
         blockEnd=$(grep -n "#openconnect mark" $hostsFile | awk -F ":" '{print $1}' | tail -n 1)
         sed "$blockStart,$blockEnd d" -i $hostsFile
@@ -27,25 +27,26 @@ function hostsFileCleanup {
 
 if [ "$action" == "uninstall" ]; then
     hostsFileCleanup;
-
     exit 0;
 fi
 
-stat $script  2>1 >/dev/null
-if [ $? -gt 0 ]; then
+if [ ! -f $script ]; then
     curl -fsSL "${baseUrl}/scripts/vpn.bash" -o $script;
     chmod +x $script;
 fi
 
-sed "s#VPN_SERVER=.*#VPN_SERVER='$server'#" -i $script
-sed "s#VPN_USER=.*#VPN_USER='$user'#" -i $script
-sed "s#VPN_PASSWORD=.*#VPN_PASSWORD='$password'#" -i $script
-sed "s#VPN_GROUP=.*#VPN_GROUP='$group'#" -i $script
-sed "s#VPN_GROUP_PASSWORD=.*#VPN_GROUP_PASSWORD='$grouppassword'#" -i $script
+if [ ! -f $config ]; then
+    curl -fsSL --create-dirs "${baseUrl}/scripts/server.conf" -o $config;
+fi
 
 # find server cert
-servercert=$(/usr/local/bin/vpn findServerCert)
-sed "s#VPN_SERVER_CERT=.*#VPN_SERVER_CERT='$servercert'#" -i $script
+servercert=$(echo "$password" | openconnect --authgroup="$group" --non-inter -u "$user" --passwd-on-stdin --authenticate "$user" 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
+
+sed -i -e "s/vserver/$server/" $config
+sed -i -e "s/vuser/$user/" $config
+sed -i -e "s/vpassword/$password/" $config
+sed -i -e "s/vgroup/$group/" $config
+sed -i -e "s/vservercert/$servercert/" $config
 
 LOGFILE=/dev/null
 case $nodetype in 
@@ -112,6 +113,6 @@ sed "s#LOGFILE=.*#LOGFILE='$LOGFILE'#" -i $script
 
 hostsFileCleanup
 
-echo "#openconnect mark" >> $hostsFile 
+echo "#openconnect mark" >> $hostsFile
 printf "$hosts\n" >> $hostsFile
 echo "#openconnect mark" >> $hostsFile 
