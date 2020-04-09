@@ -37,6 +37,7 @@ fi
 
 if [ ! -f $config ]; then
     curl -fsSL --create-dirs "${baseUrl}/scripts/server.conf" -o $config;
+    chmod 600 $config
 fi
 
 # find server cert
