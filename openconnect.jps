@@ -118,7 +118,7 @@ actions:
     - if (response.out.indexOf("Issue") !== -1):
         message:  ${response.out}
         script: |
-          return {result: 2309, message: message.replace(/\n/g, '  \n')}
+          return {'result': '2309', 'message': message.replace(/\n/g, '  \n')}
 
   stopOpenconnect:
     - cmd [${globals.targetNodeId}]:
@@ -130,7 +130,7 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {result: 2307, message: message.replace(/\n/g, '  \n')}
+        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
 
   restartOpenconnect:
     - cmd [${globals.targetNodeId}]:
@@ -145,7 +145,7 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {result: 2307, message: message.replace(/\n/g, '  \n')}
+        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
 
   checkOpenconnectStatus:
     - cmd [${globals.targetNodeId}]:
@@ -153,7 +153,7 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {result: 2307, message: message.replace(/\n/g, '  \n')}
+        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
 
   checkHostsFile:
     - cmd [${globals.targetNodeId}]:
@@ -163,19 +163,19 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {result: 2307, message: message.replace(/\n/g, '  \n')}
+        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
 
 responses:
   2307:
     type: info
-    message:
+    message: Custom Success message!
 
   2308:
     type: success
-    message:
+    message: Custom Success message!
   
   2309:
     type: error
-    message:
+    message: Custom Success message!
 
 success: /texts/success.md
