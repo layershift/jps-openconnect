@@ -10,9 +10,8 @@ RUNNING=""
 SCRIPT_RUNNING=""
 NAME=${0##*/}
 
-LOGFILE=/dev/null
-exec > >(tee -a $LOGFILE)
-exec 2>&1
+LOGFILE=/var/log/nginx/vpn.log
+exec &> $LOGFILE
 
 # dependency check
 if ! which openconnect &> /dev/null; then
@@ -46,11 +45,11 @@ function checkOpenConnect {
 }
 
 function startWithConf {
-    VPN_PASSWORD=$(awk '/^password/{print $3}' "$1")
-    VPN_USER=$(awk '/^user/{print $3}' "$1")
-    VPN_SERVER=$(awk '/^server/{print $3}' "$1")
-    VPN_GROUP=$(awk '/^group/{print $3}' "$1")
-    VPN_SERVER_CERT=$(awk '/^servercert/{print $3}' "$1")
+    VPN_PASSWORD=$(awk '/^password/{print $3;exit}' "$1")
+    VPN_USER=$(awk '/^user/{print $3;exit}' "$1")
+    VPN_SERVER=$(awk '/^server/{print $3;exit}' "$1")
+    VPN_GROUP=$(awk '/^group/{print $3;exit}' "$1")
+    VPN_SERVER_CERT=$(awk '/^servercert/{print $3;exit}' "$1")
     echo "$VPN_PASSWORD" | openconnect --authgroup=$VPN_GROUP --servercert $VPN_SERVER_CERT -u $VPN_USER --passwd-on-stdin $VPN_SERVER & OPENCONNECT_PID=$!
     sed -i -e "/$2/d" $OPENCONNECT_PID_FILE
     echo $OPENCONNECT_PID $2 >> $OPENCONNECT_PID_FILE
