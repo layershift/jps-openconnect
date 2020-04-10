@@ -97,7 +97,7 @@ onUninstall:
     - rm -f /root/openconnect_configure.sh;
     - rm -f /etc/sudoers.d/openconnect;
     - rm -f /etc/profile.d/openconnect.sh;
-    - rm -f /etc/systemd/system/openvpn.service
+    - rm -f /etc/systemd/system/openconnect.service
     - rm -f /usr/local/bin/vpn;
   sayYes: true
   user: root
@@ -112,7 +112,7 @@ actions:
       - sh /root/openconnect_configure.sh "install" "${baseUrl}" "${settings.server}" "${settings.user}" '${settings.password}' "${settings.group}" '${settings.grouppassword}' "${settings.hosts}" "${globals.targetNodeType}";
       - curl -fsSL '${baseUrl}/scripts/sudo_openconnect' -o /etc/sudoers.d/openconnect;
       - curl -fsSL '${baseUrl}/scripts/profile_openconnect' -o /etc/profile.d/openconnect.sh;
-      - curl -fsSL '${baseUrl}/scripts/openvpn.service' -o /etc/systemd/system/openvpn.service;
+      - curl -fsSL '${baseUrl}/scripts/openconnect.service' -o /etc/systemd/system/openconnect.service;
       - systemctl daemon-reload
       sayYes: true
       user: root
@@ -123,7 +123,7 @@ actions:
 
   stopOpenconnect:
     - cmd [${globals.targetNodeId}]:
-        - systemctl stop openvpn.service 2>&1 > /dev/null;
+        - systemctl stop openconnect.service 2>&1 > /dev/null;
         - sleep 3;
         - /usr/local/bin/vpn status;
         - touch /usr/local/bin/vpn_disabled;
@@ -135,11 +135,11 @@ actions:
 
   restartOpenconnect:
     - cmd [${globals.targetNodeId}]:
-        - systemctl stop openvpn.service 2>&1 > /dev/null;
+        - systemctl stop openconnect.service 2>&1 > /dev/null;
         - sleep 3;
         - /usr/local/bin/vpn status;
         - rm -f /usr/local/bin/vpn_disabled
-        - systemctl start openvpn.service 2>&1 > /dev/null && echo "";
+        - systemctl start openconnect.service 2>&1 > /dev/null && echo "";
         - sleep 3;
         - /usr/local/bin/vpn status;
         - echo "";
