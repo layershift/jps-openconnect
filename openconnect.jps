@@ -93,6 +93,8 @@ onInstall:
 onUninstall:
   cmd [${globals.targetNodeId}]:
     - yum remove openconnect
+    - systemctl disable openconnect.service 2>&1 > /dev/null;
+    - systemctl stop openconnect.service 2>&1 > /dev/null;
     - sh /root/openconnect_configure.sh "uninstall"
     - rm -f /root/openconnect_configure.sh;
     - rm -f /etc/sudoers.d/openconnect;
@@ -114,12 +116,14 @@ actions:
       - curl -fsSL '${baseUrl}/scripts/profile_openconnect' -o /etc/profile.d/openconnect.sh;
       - curl -fsSL '${baseUrl}/scripts/openconnect.service' -o /etc/systemd/system/openconnect.service;
       - systemctl daemon-reload
+      - systemctl enable openconnect.service 2>&1 > /dev/null;
+      - systemctl start openconnect.service 2>&1 > /dev/null;
       sayYes: true
       user: root
     - if (response.out.indexOf("Issue") !== -1):
         message:  ${response.out}
         script: |
-          return {'result': '2309', 'message': message.replace(/\n/g, '  \n')}
+          return {'result': 2309, 'message': message.replace(/\n/g, '  \n')}
 
   stopOpenconnect:
     - cmd [${globals.targetNodeId}]:
@@ -131,30 +135,28 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
+        return {'result': 2307, 'message': message.replace(/\n/g, '  \n')}
 
   restartOpenconnect:
     - cmd [${globals.targetNodeId}]:
-        - systemctl stop openconnect.service 2>&1 > /dev/null;
+        - systemctl restart openconnect.service 2>&1 > /dev/null;
         - sleep 3;
-        - /usr/local/bin/vpn status;
-        - rm -f /usr/local/bin/vpn_disabled
-        - systemctl start openconnect.service 2>&1 > /dev/null && echo "";
-        - sleep 3;
-        - /usr/local/bin/vpn status;
+        - systemctl status openconnect.service 2>&1 > /dev/null;
+        - if [ $? -gt 0 ]; then systemctl status openconnect.service; fi;
         - echo "";
       user: root
     - message: ${response.out}
       script: |
-        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
+        return {'result': 2307, 'message': message.replace(/\n/g, '  \n')}
 
   checkOpenconnectStatus:
     - cmd [${globals.targetNodeId}]:
-        - /usr/local/bin/vpn status;
+        - systemctl status openconnect.service;
+        - echo "";
       user: root
     - message: ${response.out}
       script: |
-        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
+        return {'result': 2307, 'message': message.replace(/\n/g, '  \n')}
 
   checkHostsFile:
     - cmd [${globals.targetNodeId}]:
@@ -164,7 +166,7 @@ actions:
       user: root
     - message: ${response.out}
       script: |
-        return {'result': '2307', 'message': message.replace(/\n/g, '  \n')}
+        return {'result': 2307, 'message': message.replace(/\n/g, '  \n')}
 
 responses:
   2307:
