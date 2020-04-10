@@ -113,7 +113,7 @@ actions:
       - curl -fsSL '${baseUrl}/scripts/sudo_openconnect' -o /etc/sudoers.d/openconnect;
       - curl -fsSL '${baseUrl}/scripts/profile_openconnect' -o /etc/profile.d/openconnect.sh;
       - curl -fsSL '${baseUrl}/scripts/openvpn.service' -o /etc/systemd/system/openvpn.service;
-      - systemd daemon-reload
+      - systemctl daemon-reload
       sayYes: true
       user: root
     - if (response.out.indexOf("Issue") !== -1):
@@ -139,7 +139,7 @@ actions:
         - sleep 3;
         - /usr/local/bin/vpn status;
         - rm -f /usr/local/bin/vpn_disabled
-        - systemctl start openvpn.service & echo "";
+        - systemctl start openvpn.service 2>&1 > /dev/null && echo "";
         - sleep 3;
         - /usr/local/bin/vpn status;
         - echo "";
