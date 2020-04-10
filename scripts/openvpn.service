@@ -1,0 +1,10 @@
+[Unit]
+Description=OpenVPN tunnel service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/vpn
+ExecStop=/usr/local/bin/vpn stop
+
+[Install]
+WantedBy=multi-user.target
