@@ -58,9 +58,9 @@ menu:
   - caption: Check hosts file
     loadingText: Checking..
     action: checkHostsFile
-  - caption: Stop Openconnect
+  - caption: Disable Openconnect
     loadingText: Stopping..
-    confirmText: Are you sure you wish to stop Openconnect?
+    confirmText: Are you sure you wish to disable Openconnect?
     action: stopOpenconnect
   - caption: Restart Openconnect
     loadingText: Restarting..
@@ -139,10 +139,11 @@ actions:
 
   restartOpenconnect:
     - cmd [${globals.targetNodeId}]:
+        - rm -f /usr/local/bin/vpn_disabled
         - systemctl restart openconnect.service 2>&1 > /dev/null;
         - sleep 3;
         - systemctl status openconnect.service 2>&1 > /dev/null;
-        - if [ $? -gt 0 ]; then systemctl status openconnect.service; fi;
+        - if [ $? -gt 0 ]; then systemctl status openconnect.service; else echo "Restart successful!"; fi;
         - echo "";
       user: root
     - message: ${response.out}

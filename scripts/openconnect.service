@@ -1,10 +1,18 @@
 [Unit]
-Description=OpenVPN tunnel service
+Description=Openconnect tunnel service
 
 [Service]
 Type=simple
 ExecStart=/usr/local/bin/vpn
-ExecStop=/usr/local/bin/vpn stop
+#ExecStop=/usr/local/bin/vpn stop
+
+#KillSignal=SIGTERM
+KillSignal=SIGINT
+
+# Restart crashed server only, on-failure would also restart
+Restart=on-abort
+RestartSec=5s
+
 
 [Install]
 WantedBy=multi-user.target

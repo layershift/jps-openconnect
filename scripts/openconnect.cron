@@ -2,5 +2,5 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 SHELL=/bin/bash
 
-*/5 * * * * root /usr/local/bin/vpn &
+*/5 * * * * root (if ! systemctl is-active --quiet openconnect.service; then systemctl start --quiet openconnect.service; fi)
 
