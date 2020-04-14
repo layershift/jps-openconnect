@@ -41,7 +41,7 @@ if [ ! -f $config ]; then
 fi
 
 # find server cert
-servercert=$(echo "$password" | openconnect --authgroup="$group" --non-inter -u "$user" --passwd-on-stdin --authenticate "$user" 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
+servercert=$(echo "$password" | openconnect --authgroup="$group" --non-inter -u "$user" --passwd-on-stdin --authenticate "$server" 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
 
 sed -i -e "s/vserver/$server/" $config
 sed -i -e "s/vuser/$user/" $config
