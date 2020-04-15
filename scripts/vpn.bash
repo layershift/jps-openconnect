@@ -85,7 +85,7 @@ function updateServerCert {
     VPN_SERVER=$(awk '/^server/{print $3;exit}' "$1")
     VPN_GROUP=$(awk '/^group/{print $3;exit}' "$1")
 
-    servercert=$(echo "$VPN_PASSWORD" | openconnect --non-inter --authentocate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
+    servercert=$(echo "$VPN_PASSWORD" | openconnect --non-inter --authenticate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
 
     if grep -q servercert $1; then
         sed -i -e "s/^servercert.*$/servercert = $servercert/" "$1"
