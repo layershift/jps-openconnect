@@ -112,7 +112,7 @@ actions:
       - which systemctl 2>/dev/null >/dev/null; if [ $? -gt 0 ]; then echo -e "Issue:\nsystemctl not found"; exit 0; fi;
       - yum install epel-release && yum install openconnect; if [ $? -gt 0 ]; then echo -e "Issue:\nCan't install openconnect"; exit 0; fi;
       - curl -fsSL '${baseUrl}/scripts/openconnect_configure.sh' -o /root/openconnect_configure.sh;
-      - sh /root/openconnect_configure.sh "install" "${baseUrl}" "${settings.server}" "${settings.user}" '${settings.password}' "${settings.group}" '${settings.grouppassword}' "${settings.hosts}" "${globals.targetNodeType}";
+      - bash /root/openconnect_configure.sh "install" "${baseUrl}" "${settings.server}" "${settings.user}" '${settings.password}' "${settings.group}" '${settings.grouppassword}' "${settings.hosts}" "${globals.targetNodeType}";
       - curl -fsSL '${baseUrl}/scripts/sudo_openconnect' -o /etc/sudoers.d/openconnect;
       - curl -fsSL '${baseUrl}/scripts/profile_openconnect' -o /etc/profile.d/openconnect.sh;
       - curl -fsSL '${baseUrl}/scripts/openconnect.service' -o /etc/systemd/system/openconnect.service;
