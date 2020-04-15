@@ -79,15 +79,51 @@ function stopOpenConnect {
     exit 0;
 }
 
+function updateServerCert {
+    VPN_PASSWORD=$(awk '/^password/{print $3;exit}' "$1")
+    VPN_USER=$(awk '/^user/{print $3;exit}' "$1")
+    VPN_SERVER=$(awk '/^server/{print $3;exit}' "$1")
+    VPN_GROUP=$(awk '/^group/{print $3;exit}' "$1")
+
+    servercert=$(echo "$VPN_PASSWORD" | openconnect --non-inter --authentocate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
+
+    if grep -q servercert $1; then
+        sed -i -e "s/^servercert.*$/servercert = $servercert/" "$1"
+    else
+        echo "servercert = $servercert" >> "$1"
+    fi
+
+    echo "Updated server certificate hash for $1 | $servercert"
+}
+
+function scriptUsage {
+    echo "usage: vpn [-dv] [action] <args>"
+    echo "  -d | --debug     display debug info"
+    echo "  -v | --verbose   display full output"
+    echo "  ----------------------------------------------------------------------------------"
+    echo "  help                                display this help"
+    echo "  stop                                stop the VPN"
+    echo "  status                              display VPN status"
+    echo "  update-server-cert <config_file>    update the server certificate for given config"
+}
+
 while [[ $# -gt 0 ]]; do
     param="$1"
     shift
     case $param in
-            -h|--help)
-                script_usage
+            update-server-cert)
+                if [[ $# -eq 0 ]]; then
+                    echo "usage: vpn update-server-cert <config_file>"
+                    exit 1
+                fi
+                updateServerCert "$1"
                 exit 0
             ;;
-            stop|kill)
+            help)
+                scriptUsage
+                exit 0
+            ;;
+            stop)
                 stopOpenConnect
                 exit 0
             ;;
@@ -95,7 +131,7 @@ while [[ $# -gt 0 ]]; do
                 VERBOSE=1;
                 VPN_OPTIONS=$VPN_OPTIONS" -v";
             ;;
-            --debug)
+            -d|--debug)
                 set -x
             ;;
             status)
