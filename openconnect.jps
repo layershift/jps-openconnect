@@ -101,6 +101,7 @@ onUninstall:
     - rm -f /etc/profile.d/openconnect.sh;
     - rm -f /etc/systemd/system/openconnect.service
     - rm -f /usr/local/bin/vpn;
+    - rm -rf /etc/vpn-conf
   sayYes: true
   user: root
 
