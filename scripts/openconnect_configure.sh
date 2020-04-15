@@ -43,7 +43,7 @@ fi
 # find server cert
 servercert=$(echo "$password" | openconnect --non-inter --authenticate --authgroup="$group" -u "$user" --passwd-on-stdin "$server" 2>&1 | grep "\-\-servercert" | sed "s#.*--servercert ##g")
 
-sed -i -e "s/^server.*$/server = $server/" $config
+sed -i -e "s/^server =.*$/server = $server/" $config
 sed -i -e "s/^user.*$/user = $user/" $config
 sed -i -e "s/^password.*$/password = $password/" $config
 sed -i -e "s/^group.*$/group = $group/" $config
