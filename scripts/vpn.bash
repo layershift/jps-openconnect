@@ -11,7 +11,7 @@ SCRIPT_RUNNING=""
 NAME=${0##*/}
 
 LOGFILE=/var/log/nginx/vpn.log
-exec &> $LOGFILE
+exec 3>&1 &> $LOGFILE
 
 # dependency check
 if ! which openconnect &> /dev/null; then
@@ -93,18 +93,18 @@ function updateServerCert {
         echo "servercert = $servercert" >> "$1"
     fi
 
-    echo "Updated server certificate hash for $1 | $servercert"
+    echo "Updated server certificate hash for $1 | $servercert" 1>&3
 }
 
 function scriptUsage {
-    echo "usage: vpn [-dv] [action] <args>"
-    echo "  -d | --debug     display debug info"
-    echo "  -v | --verbose   display full output"
-    echo "  ----------------------------------------------------------------------------------"
-    echo "  help                                display this help"
-    echo "  stop                                stop the VPN"
-    echo "  status                              display VPN status"
-    echo "  update-server-cert <config_file>    update the server certificate for given config"
+    echo "usage: vpn [-dv] [action] <args>" 1>&3
+    echo "  -d | --debug     display debug info" 1>&3
+    echo "  -v | --verbose   display full output" 1>&3
+    echo "  ----------------------------------------------------------------------------------" 1>&3
+    echo "  help                                display this help" 1>&3
+    echo "  stop                                stop the VPN" 1>&3
+    echo "  status                              display VPN status" 1>&3
+    echo "  update-server-cert <config_file>    update the server certificate for given config" 1>&3
 }
 
 while [[ $# -gt 0 ]]; do
@@ -113,7 +113,7 @@ while [[ $# -gt 0 ]]; do
     case $param in
             update-server-cert)
                 if [[ $# -eq 0 ]]; then
-                    echo "usage: vpn update-server-cert <config_file>"
+                    echo "usage: vpn update-server-cert <config_file>" 1>&3
                     exit 1
                 fi
                 updateServerCert "$1"
@@ -138,9 +138,9 @@ while [[ $# -gt 0 ]]; do
                 checkOpenConnect
                 echo -n "$0 .. "
                 if [ $RUNNING -eq 0 ]; then
-                    echo "running"
+                    echo "running" 1>&3
                 else
-                    echo "stopped"
+                    echo "stopped" 1>&3
                 fi
                 if [ $VERBOSE -gt 0 ]; then
                     pstree $(tail -n 1 $PID_FILE) -hla
