@@ -66,6 +66,10 @@ menu:
     loadingText: Restarting..
     confirmText: Are you sure you wish to restart Openconnect?
     action: restartOpenconnect
+  - caption: Regenerate Certificates
+    loadingText: Generating new certificates...
+    confirmText: Are you sure you wish to regenerate certificates?
+    action: generateCertificates
   - caption: Configure
     loadingText: Updating..
     settings: main
@@ -165,6 +169,15 @@ actions:
         - grep -q "#openconnect mark" /etc/hosts 
         - if [ $? -eq 0 ]; then from=$(grep "#openconnect mark" /etc/hosts -m1 -n | awk -F ":" '{print $1}'); else from=1; fi;
         - sed -ne $from,999p /etc/hosts;
+      user: root
+    - message: ${response.out}
+      script: |
+        return {'result': 2307, 'message': message.replace(/\n/g, '  \n')}
+  generateCertificates:
+    - cmd [${globals.targetNodeId}]:
+        - /usr/local/bin/vpn update-server-cert
+        - echo "Certificates regenerated successfully!"
+        - echo "";
       user: root
     - message: ${response.out}
       script: |
