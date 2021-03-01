@@ -115,11 +115,9 @@ while [[ $# -gt 0 ]]; do
     shift
     case $param in
             update-server-cert)
-                if [[ $# -eq 0 ]]; then
-                    echo "usage: vpn update-server-cert <config_file>" 1>&3
-                    exit 1
-                fi
-                updateServerCert "$1"
+                for conf in `find /etc/vpn-conf -name "*.conf" -type f`; do
+                    updateServerCert "$conf"
+                done;
                 exit 0
             ;;
             help|-h|--help)
