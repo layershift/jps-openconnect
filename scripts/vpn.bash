@@ -86,12 +86,12 @@ function updateServerCert {
     VPN_GROUP=$(awk '/^group/{print $3;exit}' "$1")
 
     if [ $VERBOSE -gt 0 ]; then
-        echo "servercert=\$(echo $VPN_PASSWORD | openconnect --non-inter --authenticate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | egrep \"\-\-servercert|FINGERPRINT\" | sed \"s#.*--servercert ##g\" | sed \"s#FINGERPRINT=##g\" | tr \"'\" \" \")" 1>&3
+        echo "servercert=\$(echo $VPN_PASSWORD | openconnect --non-inter --authenticate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | egrep \"\-\-servercert|FINGERPRINT\" | sed \"s#.*--servercert ##g\" | sed \"s#FINGERPRINT=##g\" | xargs)" 1>&3
     fi
-    servercert=$(echo $VPN_PASSWORD | openconnect --non-inter --authenticate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | egrep "\-\-servercert|FINGERPRINT" | sed "s#.*--servercert ##g" | sed "s#FINGERPRINT=##g" | tr "'" " ")
+    servercert=$(echo $VPN_PASSWORD | openconnect --non-inter --authenticate --authgroup=$VPN_GROUP -u $VPN_USER --passwd-on-stdin $VPN_SERVER 2>&1 | egrep "\-\-servercert|FINGERPRINT" | sed "s#.*--servercert ##g" | sed "s#FINGERPRINT=##g" | xargs)
 
     if grep -q servercert $1; then
-        sed -i -e "s#^servercert.*#$servercert = $servercert#" "$1"
+        sed -i -e "s#^servercert.*#servercert = $servercert#" "$1"
     else
         echo "servercert = $servercert" >> "$1"
     fi
