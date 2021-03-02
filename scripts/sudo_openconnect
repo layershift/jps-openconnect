@@ -1,3 +1,5 @@
-Cmnd_Alias OPENCONNECT = /usr/local/bin/vpn, /usr/local/bin/vpn *, /usr/bin/systemctl restart openconnect*, /usr/bin/systemctl stop openconnect*, /usr/bin/systemctl start openconnect*, /usr/bin/systemctl status openconnect*
+Cmnd_Alias OPENCONNECT = /usr/local/bin/vpn, /usr/local/bin/vpn *,
+Cmnd_Alias OPENCONNECT_SYSTEMCTL            = /usr/bin/systemctl restart openconnect,           /usr/bin/systemctl stop openconnect,            /usr/bin/systemctl start openconnect,           /usr/bin/systemctl status openconnect
+Cmnd_Alias OPENCONNECT_SYSTEMCTL_SERVICE    = /usr/bin/systemctl restart openconnect.service,   /usr/bin/systemctl stop openconnect.service,    /usr/bin/systemctl start openconnect.service,   /usr/bin/systemctl status openconnect.service
 
-%ssh-access ALL = NOPASSWD: OPENCONNECT
+%ssh-access ALL = NOPASSWD: OPENCONNECT, OPENCONNECT_SYSTEMCTL, OPENCONNECT_SYSTEMCTL_SERVICE
